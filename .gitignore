@@ -90,3 +90,7 @@ dist-ssr
 *.egg-info
 .venv
 .environments
+
+dist/
+.vite/
+node_modules
