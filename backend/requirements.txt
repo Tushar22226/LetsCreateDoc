@@ -1,0 +1,16 @@
+openai
+fastapi
+uvicorn
+python-docx
+google-generativeai
+httpx
+pydantic
+pydantic-settings
+python-multipart
+pytest
+pytest-asyncio
+langchain
+langgraph
+deepagents
+langchain-openai
+python-dotenv
