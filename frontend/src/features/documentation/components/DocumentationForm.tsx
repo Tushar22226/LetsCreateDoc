@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Plus, X, Wand2, FileText, ListOrdered } from 'lucide-react';
 import type { ProjectData } from '../../../services/documentationService';
 
+type OptionalOutputKey = 'include_code' | 'include_flowcharts' | 'include_graphs' | 'include_charts';
+
 interface DocumentationFormProps {
     onSubmit: (data: ProjectData) => void;
     isGenerating: boolean;
@@ -17,7 +19,18 @@ export const DocumentationForm: React.FC<DocumentationFormProps> = ({ onSubmit, 
         page_count: 50,
         description: '',
         custom_index: [],
+        theme_color: '#1F4E79',
+        include_code: true,
+        include_flowcharts: true,
+        include_graphs: true,
+        include_charts: true,
     });
+    const optionalOutputs: { key: OptionalOutputKey; label: string }[] = [
+        { key: 'include_code', label: 'Code snippets' },
+        { key: 'include_flowcharts', label: 'Flowcharts' },
+        { key: 'include_graphs', label: 'Graphs' },
+        { key: 'include_charts', label: 'Charts' },
+    ];
 
     const [newItem, setNewItem] = useState('');
 
@@ -71,6 +84,20 @@ export const DocumentationForm: React.FC<DocumentationFormProps> = ({ onSubmit, 
                             />
                         </div>
                         <div className="space-y-2">
+                            <label className="text-sm font-medium">Document Accent</label>
+                            <div className="flex items-center gap-3">
+                                <Input
+                                    type="color"
+                                    value={data.theme_color}
+                                    onChange={e => setData(prev => ({ ...prev, theme_color: e.target.value.toUpperCase() }))}
+                                    className="h-11 w-16 p-1"
+                                />
+                                <div className="text-sm text-muted-foreground">
+                                    {data.theme_color.toUpperCase()} for headings, tables, cover accents, and callouts.
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
                             <label className="text-sm font-medium">Description & Architecture Brief</label>
                             <Textarea
                                 className="min-h-[200px]"
@@ -78,6 +105,24 @@ export const DocumentationForm: React.FC<DocumentationFormProps> = ({ onSubmit, 
                                 value={data.description}
                                 onChange={e => setData(prev => ({ ...prev, description: e.target.value }))}
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Optional Outputs</label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {optionalOutputs.map(option => (
+                                    <label key={option.key} className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm font-medium">
+                                        <input
+                                            type="checkbox"
+                                            checked={data[option.key]}
+                                            onChange={e => setData(prev => ({ ...prev, [option.key]: e.target.checked }))}
+                                        />
+                                        <span>{option.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                                Disabled items will not be planned or generated.
+                            </div>
                         </div>
                     </CardContent>
                 </Card>

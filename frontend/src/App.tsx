@@ -7,6 +7,8 @@ import { ProjectHistory } from './features/documentation/components/ProjectHisto
 // --- Services ---
 const API_BASE_URL = 'http://localhost:8000';
 
+type OptionalOutputKey = 'include_code' | 'include_flowcharts' | 'include_graphs' | 'include_charts';
+
 interface Section {
   title: string;
   description?: string;
@@ -17,6 +19,11 @@ interface ProjectData {
   page_count: number;
   description: string;
   custom_index: Section[];
+  theme_color: string;
+  include_code: boolean;
+  include_flowcharts: boolean;
+  include_graphs: boolean;
+  include_charts: boolean;
   comment?: string;
 }
 
@@ -27,6 +34,11 @@ const App: React.FC = () => {
     page_count: 50,
     description: '',
     custom_index: [],
+    theme_color: '#1F4E79',
+    include_code: true,
+    include_flowcharts: true,
+    include_graphs: true,
+    include_charts: true,
     comment: ''
   });
 
@@ -38,6 +50,12 @@ const App: React.FC = () => {
   const [isLoadingPlan, setIsLoadingPlan] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
+  const optionalOutputs: { key: OptionalOutputKey; label: string }[] = [
+    { key: 'include_code', label: 'Code snippets' },
+    { key: 'include_flowcharts', label: 'Flowcharts' },
+    { key: 'include_graphs', label: 'Graphs' },
+    { key: 'include_charts', label: 'Charts' },
+  ];
 
   const terminalRef = useRef<HTMLDivElement>(null);
   const planRef = useRef<HTMLDivElement>(null);
@@ -87,7 +105,12 @@ const App: React.FC = () => {
       title: data.title,
       description: data.description,
       page_count: data.page_count.toString(),
-      comment: data.comment || ''
+      comment: data.comment || '',
+      theme_color: data.theme_color,
+      include_code: String(data.include_code),
+      include_flowcharts: String(data.include_flowcharts),
+      include_graphs: String(data.include_graphs),
+      include_charts: String(data.include_charts)
     });
 
     const eventSource = new EventSource(`${API_BASE_URL}/documentation/stream-plan?${queryParams.toString()}`);
@@ -136,6 +159,11 @@ const App: React.FC = () => {
       page_count: data.page_count.toString(),
       custom_index: JSON.stringify(sections),
       comment: data.comment || '',
+      theme_color: data.theme_color,
+      include_code: String(data.include_code),
+      include_flowcharts: String(data.include_flowcharts),
+      include_graphs: String(data.include_graphs),
+      include_charts: String(data.include_charts),
       project_id: currentProjectId?.toString() || ''
     });
 
@@ -237,6 +265,59 @@ const App: React.FC = () => {
                 <div className="form-group">
                   <label>Target Pages</label>
                   <input type="number" value={data.page_count} onChange={e => setData({ ...data, page_count: parseInt(e.target.value) })} />
+                </div>
+                <div className="form-group">
+                  <label>Document Accent</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+                    <input
+                      type="color"
+                      value={data.theme_color}
+                      onChange={e => setData({ ...data, theme_color: e.target.value.toUpperCase() })}
+                      style={{ width: '3.25rem', height: '2.5rem', padding: 0, border: '1px solid #cbd5e1', borderRadius: '8px', background: '#ffffff' }}
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                      <strong style={{ color: '#1e293b', letterSpacing: '0.04em' }}>{data.theme_color.toUpperCase()}</strong>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                        Used across the cover page, section headings, tables, and document accents.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Optional Outputs</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.75rem' }}>
+                    {optionalOutputs.map((option) => (
+                      <label
+                        key={option.key}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.55rem',
+                          padding: '0.7rem 0.8rem',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '10px',
+                          background: '#f8fafc',
+                          color: '#1e293b',
+                          fontSize: '0.92rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={data[option.key]}
+                          onChange={e => setData(prev => ({
+                            ...prev,
+                            [option.key]: e.target.checked,
+                          }))}
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <p style={{ marginTop: '0.55rem', color: '#64748b', fontSize: '0.78rem' }}>
+                    Unchecked items will be excluded from the plan and final document generation.
+                  </p>
                 </div>
                 <div className="form-group">
                   <label>Detailed Brief</label>

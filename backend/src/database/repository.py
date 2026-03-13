@@ -11,13 +11,14 @@ class DocumentationRepository:
         self.session = session
         self.lock = asyncio.Lock()
         
-    async def create_project(self, title: str, description: str, page_count: int, plan: str = None) -> Project:
+    async def create_project(self, title: str, description: str, page_count: int, theme_color: str = "#1F4E79", plan: str = None) -> Project:
         """Always creates a NEW project record for every generation request."""
         async with self.lock:
             project = Project(
                 title=title,
                 description=description,
                 page_count=page_count,
+                theme_color=theme_color,
                 plan=plan,
                 status="generating"
             )
@@ -26,10 +27,26 @@ class DocumentationRepository:
             await self.session.refresh(project)
             return project
 
-    async def get_or_create_project(self, title: str, description: str, page_count: int, plan: str = None) -> Project:
+    async def get_or_create_project(self, title: str, description: str, page_count: int, theme_color: str = "#1F4E79", plan: str = None) -> Project:
         # Legacy method kept but now aliases to create_project to satisfy existing calls 
         # while fulfilling the user's request for fresh state.
-        return await self.create_project(title, description, page_count, plan)
+        return await self.create_project(title, description, page_count, theme_color, plan)
+
+    async def update_project_metadata(self, project_id: int, title: str, description: str, page_count: int, theme_color: str) -> Optional[Project]:
+        async with self.lock:
+            stmt = select(Project).where(Project.id == project_id)
+            result = await self.session.execute(stmt)
+            project = result.scalars().first()
+            if not project:
+                return None
+
+            project.title = title
+            project.description = description
+            project.page_count = page_count
+            project.theme_color = theme_color
+            await self.session.commit()
+            await self.session.refresh(project)
+            return project
 
     async def update_project_plan(self, project_id: int, plan: str) -> None:
         async with self.lock:
@@ -136,13 +153,13 @@ class DocumentationRepository:
             await self.session.refresh(diagram)
             return diagram
             
-    async def get_project_diagrams(self, project_id: int) -> List[bytes]:
+    async def get_project_diagrams(self, project_id: int) -> List[tuple]:
         import base64
         stmt = select(Diagram).where(Diagram.project_id == project_id)
         result = await self.session.execute(stmt)
         diagrams = result.scalars().all()
         
-        return [base64.b64decode(d.image_data) for d in diagrams]
+        return [(base64.b64decode(d.image_data), d.caption) for d in diagrams]
             
     async def cleanup_project_diagrams(self, project_id: int) -> None:
         async with self.lock:

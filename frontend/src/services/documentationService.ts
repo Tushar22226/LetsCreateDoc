@@ -7,6 +7,11 @@ export interface ProjectData {
     page_count: number;
     description: string;
     custom_index: string[];
+    theme_color: string;
+    include_code: boolean;
+    include_flowcharts: boolean;
+    include_graphs: boolean;
+    include_charts: boolean;
 }
 
 export interface ProjectHistoryItem {
@@ -14,6 +19,7 @@ export interface ProjectHistoryItem {
     title: string;
     description: string;
     page_count: number;
+    theme_color: string;
     status: string;
     created_at: string;
 }

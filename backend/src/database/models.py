@@ -11,6 +11,7 @@ class Project(Base):
     description = Column(Text, nullable=True)
     plan = Column(Text, nullable=True) # Cached documentation blueprint
     page_count = Column(Integer, nullable=False, default=10)
+    theme_color = Column(String(7), nullable=False, default="#1F4E79")
     status = Column(String(50), nullable=False, default="generating")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     

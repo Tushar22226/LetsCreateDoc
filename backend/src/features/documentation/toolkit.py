@@ -46,17 +46,18 @@ def get_documentation_toolkit(repo: DocumentationRepository, llm: LLMClient) -> 
         return f"Successfully saved section: {section_name}"
 
     @tool
-    async def generate_diagram(title: str, mermaid_code: str) -> str:
+    async def generate_diagram(title: str, mermaid_code: str, caption: str = "") -> str:
         """Converts mermaid code into an image and stores it for the project.
         
         Args:
             title: The project title.
             mermaid_code: The mermaid diagram code.
+            caption: A short, descriptive caption for the diagram.
         """
         project = await repo.get_or_create_project(title, "", 10)
         img_bytes = await diagram_generator.generate_image(mermaid_code)
         if img_bytes:
-            await repo.add_diagram(project.id, img_bytes)
+            await repo.add_diagram(project.id, img_bytes, caption)
             return "Diagram generated and attached."
         return "Failed to generate diagram."
 

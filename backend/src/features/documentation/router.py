@@ -50,12 +50,22 @@ async def stream_plan(
     page_count: int,
     service: ServiceDepend,
     comment: str = "",
+    theme_color: str = "#1F4E79",
+    include_code: bool = True,
+    include_flowcharts: bool = True,
+    include_graphs: bool = True,
+    include_charts: bool = True,
 ):
     project_input = ProjectInput(
         title=title,
         description=description,
         page_count=page_count,
         comment=comment,
+        theme_color=theme_color,
+        include_code=include_code,
+        include_flowcharts=include_flowcharts,
+        include_graphs=include_graphs,
+        include_charts=include_charts,
     )
 
     return StreamingResponse(
@@ -73,6 +83,11 @@ async def stream_generation(
     service: ServiceDepend,
     custom_index: str = "",
     comment: str = "",
+    theme_color: str = "#1F4E79",
+    include_code: bool = True,
+    include_flowcharts: bool = True,
+    include_graphs: bool = True,
+    include_charts: bool = True,
     regenerate: bool = False,
     project_id: Optional[int] = None,
 ):
@@ -89,6 +104,11 @@ async def stream_generation(
         page_count=page_count,
         custom_index=parsed_index,
         comment=comment,
+        theme_color=theme_color,
+        include_code=include_code,
+        include_flowcharts=include_flowcharts,
+        include_graphs=include_graphs,
+        include_charts=include_charts,
         regenerate=regenerate,
     )
 
